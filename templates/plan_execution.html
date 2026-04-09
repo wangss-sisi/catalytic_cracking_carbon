@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">计划执行情况管理</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h5">录入计划执行情况</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('plan_execution') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ form.year.label(class="form-label") }}
+                            {{ form.year(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.month.label(class="form-label") }}
+                            {{ form.month(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.烧焦量.label(class="form-label") }}
+                            {{ form.烧焦量(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.加工量.label(class="form-label") }}
+                            {{ form.加工量(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.设备开工天数.label(class="form-label") }}
+                            {{ form.设备开工天数(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.平均日加工量.label(class="form-label") }}
+                            {{ form.平均日加工量(class="form-control") }}
+                        </div>
+                        {% if current_user.role == 'admin' %}
+                        {{ form.submit(class="btn btn-primary w-100") }}
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h5">数据管理</h2>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="number" name="year" placeholder="年份" class="form-control" value="{{ year }}" min="2000" max="2100">
+                            </div>
+                            <div class="col-md-4">
+                                <select name="month" class="form-control">
+                                    <option value="">全部月份</option>
+                                    {% for i in range(1, 13) %}
+                                        <option value="{{ i }}" {% if month == i %}selected{% endif %}>{{ i }}月</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">查询</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('export_plan_execution') }}" class="btn btn-success w-100">导出数据</a>
+                        </div>
+                        {% if current_user.role == 'admin' %}
+                        <div class="col-md-6">
+                            <form method="POST" action="{{ url_for('import_plan_execution') }}" enctype="multipart/form-data">
+                                <div class="input-group">
+                                    <input type="file" name="file" class="form-control" accept=".xlsx,.xls">
+                                    <button type="submit" class="btn btn-info">导入</button>
+                                </div>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if plans %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>年月</th>
+                                        <th>烧焦量(吨)</th>
+                                        <th>加工量(吨)</th>
+                                        <th>设备开工天数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for plan in plans %}
+                                        <tr>
+                                            <td>{{ plan.year }}-{{ "%02d"|format(plan.month) }}</td>
+                                            <td>{{ plan.烧焦量 }}</td>
+                                            <td>{{ plan.加工量 or 0 }}</td>
+                                            <td>{{ plan.设备开工天数 or 0 }}</td>
+                                            <td>
+                                                {% if current_user.role == 'admin' %}
+                                                <div class="btn-group">
+                                                    <a href="{{ url_for('plan_execution', year=plan.year, month=plan.month) }}" class="btn btn-sm btn-warning">修改</a>
+                                                    <a href="{{ url_for('delete_plan', id=plan.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('确定要删除吗？');">删除</a>
+                                                </div>
+                                                {% else %}
+                                                <span class="text-muted">无权限</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">暂无数据</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">350万吨/年催化裂化装置碳排放统计分析系统</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5">系统功能</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('plan_execution') }}" class="text-decoration-none">计划执行情况录入</a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('flue_gas') }}" class="text-decoration-none">烟气成绩录入</a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('calculate_emissions') }}" class="text-decoration-none">计算碳排放数据</a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('carbon_emission') }}" class="text-decoration-none">查看碳排放数据表</a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('analysis') }}" class="text-decoration-none">趋势分析和预测</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5">最新碳排放数据</h2>
+                </div>
+                <div class="card-body">
+                    {% if emissions %}
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>年月</th>
+                                    <th>CO2排放量(吨)</th>
+                                    <th>焦层含碳量(%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emission in emissions %}
+                                    <tr>
+                                        <td>{{ emission.year }}-{{ "%02d"|format(emission.month) }}</td>
+                                        <td>{{ emission.CO2排放量|round(2) }}</td>
+                                        <td>{{ emission.焦层中含碳量|round(2) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-center text-muted">暂无数据，请先录入计划执行情况和烟气成绩</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

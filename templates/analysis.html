@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">趋势分析与预测</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5">数据筛选</h2>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row">
+                <div class="col-md-4">
+                    <input type="number" name="year" placeholder="年份（留空表示所有年份）" class="form-control" value="{{ selected_year }}" min="2000" max="2100">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5">CO2排放量变化趋势</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="co2Chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5">焦层中含碳量变化趋势</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="carbonContentChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="h5">烧焦量变化趋势</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="cokeChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5">分析与预测</h2>
+        </div>
+        <div class="card-body">
+            <h3 class="h6">CO2排放量变化分析</h3>
+            <p>根据{{ selected_year or '所有年份' }}的数据，CO2排放量主要受以下因素影响：</p>
+            <ul>
+                <li>烧焦量的变化：烧焦量增加会直接导致CO2排放量增加</li>
+                <li>焦层中含碳量的变化：含碳量越高，相同烧焦量下CO2排放量越多</li>
+                <li>烟气中O2和CO2含量：影响焦层含碳量的计算</li>
+            </ul>
+            
+            <h3 class="h6 mt-4">趋势预测</h3>
+            <p>基于{{ selected_year or '历史' }}数据趋势，预计未来CO2排放量将：</p>
+            <ul>
+                <li>随着装置运行稳定性的提高，CO2排放量将趋于稳定</li>
+                <li>若加工量增加，烧焦量可能随之增加，导致CO2排放量上升</li>
+                <li>通过优化操作参数，可降低焦层含碳量，从而减少CO2排放</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // CO2排放量图表
+        const co2Ctx = document.getElementById('co2Chart').getContext('2d');
+        const co2Chart = new Chart(co2Ctx, {
+            type: 'line',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: 'CO2排放量(吨)',
+                    data: {{ co2_data|safe }},
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // 焦层含碳量图表
+        const carbonContentCtx = document.getElementById('carbonContentChart').getContext('2d');
+        const carbonContentChart = new Chart(carbonContentCtx, {
+            type: 'line',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: '焦层中含碳量(%)',
+                    data: {{ carbon_content_data|safe }},
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // 烧焦量图表
+        const cokeCtx = document.getElementById('cokeChart').getContext('2d');
+        const cokeChart = new Chart(cokeCtx, {
+            type: 'line',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: '烧焦量(吨)',
+                    data: {{ 烧焦量_data|safe }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

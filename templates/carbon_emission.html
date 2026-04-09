@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">碳排放活动水平数据管理</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="h5">350万吨/年催化裂化装置碳排放数据</h2>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="number" name="year" placeholder="年份" class="form-control" value="{{ year }}" min="2000" max="2100">
+                            </div>
+                            <div class="col-md-4">
+                                <select name="month" class="form-control">
+                                    <option value="">全部月份</option>
+                                    {% for i in range(1, 13) %}
+                                        <option value="{{ i }}" {% if month == i %}selected{% endif %}>{{ i }}月</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">查询</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            {% if current_user.role == 'admin' %}
+                            <div class="col-md-6">
+                                <a href="{{ url_for('calculate_emissions') }}" class="btn btn-primary w-100 mb-2">计算碳排放</a>
+                            </div>
+                            {% else %}
+                            <div class="col-md-6">
+                                <button class="btn btn-primary w-100 mb-2" disabled>计算碳排放</button>
+                            </div>
+                            {% endif %}
+                            <div class="col-md-6">
+                                <a href="{{ url_for('export_carbon_emission') }}" class="btn btn-success w-100 mb-2">导出数据</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            {% if emissions %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">年月</th>
+                                <th style="width: 100px;">烧焦量(吨)</th>
+                                <th style="width: 120px;">焦层中含碳量(%)</th>
+                                <th style="width: 100px;">碳氧化率(%)</th>
+                                <th style="width: 120px;">CO2排放量(吨)</th>
+                                <th style="width: 200px;">环比变化原因</th>
+                                <th style="width: 200px;">同比变化原因</th>
+                                <th style="width: 80px; text-align: center;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emission in emissions %}
+                                <tr>
+                                    <td>{{ emission.year }}-{{ "%02d"|format(emission.month) }}</td>
+                                    <td>{{ emission.烧焦量 }}</td>
+                                    <td>{{ emission.焦层中含碳量|round(2) }}</td>
+                                    <td>{{ emission.碳氧化率 }}</td>
+                                    <td>{{ emission.CO2排放量|round(2) }}</td>
+                                    <td>{{ emission.环比变化原因 or '-' }}</td>
+                                    <td>{{ emission.同比变化原因 or '-' }}</td>
+                                    <td style="vertical-align: middle; text-align: center; white-space: nowrap; width: 80px;">
+                                        {% if current_user.role == 'admin' %}
+                                        <form method="POST" action="{{ url_for('delete_carbon_emission', id=emission.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这条记录吗？');">删除</button>
+                                        </form>
+                                        {% else %}
+                                        <span class="text-muted">无权限</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <p class="text-muted">暂无数据，请先录入计划执行情况和烟气成绩，然后点击"计算碳排放"按钮</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
